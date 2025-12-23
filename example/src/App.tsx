@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { MarkdownViewer } from '@md-viewer'
-import type { FileTreeNode, Comment, CommentReply } from '@md-viewer'
+import { useState } from 'react';
+import { MarkdownViewer } from '@md-viewer';
+import type { FileTreeNode, Comment, CommentReply } from '@md-viewer';
 
 const sampleMarkdown = `# Welcome to Markdown Viewer
 
@@ -29,7 +29,7 @@ This is a longer section to demonstrate scrolling and the table of contents func
 ### Subsection
 
 Some more content here to make the document longer.
-`
+`;
 
 const sampleFileTree: FileTreeNode[] = [
   {
@@ -54,25 +54,25 @@ const sampleFileTree: FileTreeNode[] = [
     path: 'README.md',
     type: 'file',
   },
-]
+];
 
 function App() {
-  const [comments, setComments] = useState<Comment[]>([])
-  const [selectedFilePath, setSelectedFilePath] = useState<string | null>('README.md')
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(
+    'README.md'
+  );
 
   const handleCommentAdd = (comment: Comment) => {
-    setComments((prev) => [...prev, comment])
-  }
+    setComments((prev) => [...prev, comment]);
+  };
 
   const handleCommentDelete = (id: string) => {
-    setComments((prev) => prev.filter((c) => c.id !== id))
-  }
+    setComments((prev) => prev.filter((c) => c.id !== id));
+  };
 
   const handleCommentUpdate = (id: string, text: string) => {
-    setComments((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, text } : c))
-    )
-  }
+    setComments((prev) => prev.map((c) => (c.id === id ? { ...c, text } : c)));
+  };
 
   const handleCommentReply = (commentId: string, reply: CommentReply) => {
     setComments((prev) =>
@@ -81,10 +81,14 @@ function App() {
           ? { ...c, replies: [...(c.replies || []), reply] }
           : c
       )
-    )
-  }
+    );
+  };
 
-  const handleReplyUpdate = (commentId: string, replyId: string, text: string) => {
+  const handleReplyUpdate = (
+    commentId: string,
+    replyId: string,
+    text: string
+  ) => {
     setComments((prev) =>
       prev.map((c) =>
         c.id === commentId
@@ -96,8 +100,8 @@ function App() {
             }
           : c
       )
-    )
-  }
+    );
+  };
 
   const handleReplyDelete = (commentId: string, replyId: string) => {
     setComments((prev) =>
@@ -109,17 +113,17 @@ function App() {
             }
           : c
       )
-    )
-  }
+    );
+  };
 
   const handleFileSelect = (filePath: string) => {
-    setSelectedFilePath(filePath)
-  }
+    setSelectedFilePath(filePath);
+  };
 
   const handleExportComments = (comments: Comment[]) => {
-    console.log('Exporting comments:', comments)
+    console.log('Exporting comments:', comments);
     // You can implement actual export logic here
-  }
+  };
 
   return (
     <div className="h-screen w-screen">
@@ -138,7 +142,7 @@ function App() {
         onExportComments={handleExportComments}
       />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -48,11 +48,11 @@ export default defineConfig({
       // More specific patterns first
       {
         find: /^@md-viewer\/styles$/,
-        replacement: path.resolve(__dirname, '../src/styles.css'),
+        replacement: path.resolve(__dirname, '../dist/index.css'),
       },
       {
         find: /^@md-viewer$/,
-        replacement: path.resolve(__dirname, '../src/index.tsx'),
+        replacement: path.resolve(__dirname, '../dist/index.mjs'),
       },
       // @/ alias for example app (will be overridden by plugin for library files)
       {
@@ -60,5 +60,17 @@ export default defineConfig({
         replacement: path.resolve(__dirname, './src/$1'),
       },
     ],
+    // Ensure React and peer dependencies are deduplicated - critical for avoiding "Invalid hook call" errors
+    dedupe: [
+      'react',
+      'react-dom',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slot',
+    ],
+  },
+  optimizeDeps: {
+    // Ensure React and React-DOM are pre-bundled and shared
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
   },
 })

@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsdown';
+import { tailwindPlugin } from '@bosh-code/tsdown-plugin-tailwindcss';
 
 export default defineConfig([
   {
@@ -15,6 +16,9 @@ export default defineConfig([
       '@radix-ui/react-slot',
     ],
     treeshake: true,
+    plugins: [
+      tailwindPlugin(),
+    ],
     outExtensions() {
       return {
         js: '.js',
@@ -35,6 +39,9 @@ export default defineConfig([
       '@radix-ui/react-slot',
     ],
     treeshake: true,
+    plugins: [
+      tailwindPlugin(),
+    ],
     outExtensions() {
       return {
         js: '.mjs',
