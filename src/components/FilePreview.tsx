@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { CommentIconButton } from './CommentIconButton';
 import type { Comment } from '@/types';
@@ -34,7 +35,9 @@ export function FilePreview({
   onCommentHighlightClick,
 }: FilePreviewProps) {
   // Highlight comments in HTML
-  const highlightedHtml = highlightCommentsInHtml(htmlContent, comments);
+  const highlightedHtml = useMemo(() => {
+    return highlightCommentsInHtml(htmlContent, comments);
+  }, [htmlContent, comments]);
 
   // Handle click on highlighted comment text
   const handleHighlightClick = (e: React.MouseEvent<HTMLDivElement>) => {
