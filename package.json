@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "postinstall": "pnpm run build",
     "dev": "tsdown --watch",
     "example:dev": "cd example && pnpm run dev",
     "example:build": "cd example && pnpm run build",
