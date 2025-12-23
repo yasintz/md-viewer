@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MarkdownViewer } from '@md-viewer';
-import type { FileTreeNode, Comment, CommentReply } from '@md-viewer';
+import type { FileTreeNode, Comment, CommentReply, ComponentVisibilityConfig } from '@md-viewer';
 
 const sampleMarkdown = `# Welcome to Markdown Viewer
 
@@ -61,6 +61,11 @@ function App() {
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(
     'README.md'
   );
+  
+  // Component visibility state
+  const [fileTreeOpen, setFileTreeOpen] = useState(true);
+  const [tableOfContentsOpen, setTableOfContentsOpen] = useState(true);
+  const [commentsSidebarOpen, setCommentsSidebarOpen] = useState(true);
 
   const handleCommentAdd = (comment: Comment) => {
     setComments((prev) => [...prev, comment]);
@@ -125,6 +130,25 @@ function App() {
     // You can implement actual export logic here
   };
 
+  // Component visibility configs
+  const fileTreeConfig: ComponentVisibilityConfig = {
+    open: fileTreeOpen,
+    onOpenChange: setFileTreeOpen,
+    showCloseIcon: true,
+  };
+
+  const tableOfContentsConfig: ComponentVisibilityConfig = {
+    open: tableOfContentsOpen,
+    onOpenChange: setTableOfContentsOpen,
+    showCloseIcon: true,
+  };
+
+  const commentsSidebarConfig: ComponentVisibilityConfig = {
+    open: commentsSidebarOpen,
+    onOpenChange: setCommentsSidebarOpen,
+    showCloseIcon: true,
+  };
+
   return (
     <div className="h-screen w-screen">
       <MarkdownViewer
@@ -140,6 +164,9 @@ function App() {
         selectedFilePath={selectedFilePath}
         onFileSelect={handleFileSelect}
         onExportComments={handleExportComments}
+        fileTreeConfig={fileTreeConfig}
+        tableOfContentsConfig={tableOfContentsConfig}
+        commentsSidebarConfig={commentsSidebarConfig}
       />
     </div>
   );
