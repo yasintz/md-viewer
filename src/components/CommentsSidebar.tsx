@@ -40,6 +40,8 @@ interface CommentsSidebarProps {
   addReplyToComment: (commentId: string, reply: { id: string; text: string; timestamp: number }, filePath?: string) => void;
   onToggleCommentsSidebar?: () => void;
   focusedCommentId?: string | null;
+  shouldShakeCommentId?: string | null;
+  onCommentClick?: (commentId: string) => void;
 }
 
 export function CommentsSidebar({
@@ -70,6 +72,8 @@ export function CommentsSidebar({
   addReplyToComment,
   onToggleCommentsSidebar,
   focusedCommentId,
+  shouldShakeCommentId,
+  onCommentClick,
 }: CommentsSidebarProps) {
   const commentRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -186,6 +190,8 @@ export function CommentsSidebar({
                 updateReply={updateReply}
                 addReplyToComment={addReplyToComment}
                 isFocused={focusedCommentId === comment.id}
+                shouldShake={shouldShakeCommentId === comment.id}
+                onCommentClick={onCommentClick}
               />
             ))}
           </div>

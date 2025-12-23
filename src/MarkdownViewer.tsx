@@ -63,6 +63,7 @@ export function MarkdownViewer({
   const [commentText, setCommentText] = useState('');
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [focusedCommentId, setFocusedCommentId] = useState<string | null>(null);
+  const [shouldShakeCommentId, setShouldShakeCommentId] = useState<string | null>(null);
   const [commentsSidebarCollapsed, setCommentsSidebarCollapsed] =
     useState(false);
   const [showFileTree, setShowFileTree] = useState(true);
@@ -274,10 +275,15 @@ export function MarkdownViewer({
             configId={null}
             fileTreeLength={folderTree.length}
             comments={normalizedComments}
+            focusedCommentId={focusedCommentId}
             onCommentHighlightClick={(commentId) => {
               setFocusedCommentId(commentId);
-              // Clear focus after animation completes
-              setTimeout(() => setFocusedCommentId(null), 500);
+              setShouldShakeCommentId(commentId);
+              // Clear focus after animation completes (1s for pulse animation)
+              setTimeout(() => {
+                setFocusedCommentId(null);
+                setShouldShakeCommentId(null);
+              }, 1000);
             }}
           />
         </Card>
@@ -329,6 +335,13 @@ export function MarkdownViewer({
               setCommentsSidebarCollapsed(!commentsSidebarCollapsed)
             }
             focusedCommentId={focusedCommentId}
+            shouldShakeCommentId={shouldShakeCommentId}
+            onCommentClick={(commentId) => {
+              setFocusedCommentId(commentId);
+              // Don't shake when clicking from sidebar, only pulse highlight
+              // Clear focus after animation completes (1s for pulse animation)
+              setTimeout(() => setFocusedCommentId(null), 1000);
+            }}
           />
         )}
       </div>

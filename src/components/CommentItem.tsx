@@ -28,6 +28,8 @@ interface CommentItemProps {
   updateReply: (commentId: string, replyId: string, text: string, filePath?: string) => void;
   addReplyToComment: (commentId: string, reply: { id: string; text: string; timestamp: number }, filePath?: string) => void;
   isFocused?: boolean;
+  shouldShake?: boolean;
+  onCommentClick?: (commentId: string) => void;
 }
 
 export const CommentItem = forwardRef<HTMLDivElement, CommentItemProps>(({
@@ -55,21 +57,40 @@ export const CommentItem = forwardRef<HTMLDivElement, CommentItemProps>(({
   updateReply,
   addReplyToComment,
   isFocused = false,
+  shouldShake: shouldShakeProp = false,
+  onCommentClick,
 }, ref) => {
-  const [shouldShake, setShouldShake] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
-    if (isFocused) {
-      setShouldShake(true);
-      const timer = setTimeout(() => setShouldShake(false), 500);
+    if (shouldShakeProp) {
+      setIsShaking(true);
+      const timer = setTimeout(() => setIsShaking(false), 500);
       return () => clearTimeout(timer);
     }
-  }, [isFocused]);
+  }, [shouldShakeProp]);
+
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only trigger if clicking on the card itself, not on buttons or inputs
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'INPUT' ||
+      target.closest('button') ||
+      target.closest('textarea') ||
+      target.closest('input')
+    ) {
+      return;
+    }
+    onCommentClick?.(comment.id);
+  };
 
   return (
     <div 
       ref={ref}
-      className={`border border-gray-200 rounded-md p-4 bg-gray-50 transition-shadow hover:shadow-md ${shouldShake ? 'comment-item-shake' : ''}`}
+      className={`border border-gray-200 rounded-md p-4 bg-gray-50 transition-shadow hover:shadow-md ${isShaking ? 'comment-item-shake' : ''} ${onCommentClick ? 'cursor-pointer' : ''}`}
+      onClick={handleCardClick}
     >
       <div className="flex justify-between items-center mb-2">
         <span className="text-xs text-gray-600 font-semibold bg-blue-100 px-2 py-1 rounded">
