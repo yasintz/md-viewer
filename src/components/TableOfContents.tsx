@@ -12,9 +12,10 @@ interface TableOfContentsProps {
   htmlContent: string;
   previewRef: React.RefObject<HTMLDivElement | null>;
   onToggleTableOfContents?: () => void;
+  showCloseIcon?: boolean;
 }
 
-export function TableOfContents({ htmlContent, previewRef, onToggleTableOfContents }: TableOfContentsProps) {
+export function TableOfContents({ htmlContent, previewRef, onToggleTableOfContents, showCloseIcon = true }: TableOfContentsProps) {
   const headings = useMemo<Heading[]>(() => {
     if (!htmlContent) return [];
 
@@ -44,7 +45,7 @@ export function TableOfContents({ htmlContent, previewRef, onToggleTableOfConten
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700">Table of Contents</h3>
-        {onToggleTableOfContents && (
+        {showCloseIcon && onToggleTableOfContents && (
           <Button
             onClick={onToggleTableOfContents}
             variant="ghost"

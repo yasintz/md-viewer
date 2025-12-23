@@ -39,6 +39,7 @@ interface CommentsSidebarProps {
   updateReply: (commentId: string, replyId: string, text: string, filePath?: string) => void;
   addReplyToComment: (commentId: string, reply: { id: string; text: string; timestamp: number }, filePath?: string) => void;
   onToggleCommentsSidebar?: () => void;
+  showCloseIcon?: boolean;
   focusedCommentId?: string | null;
   shouldShakeCommentId?: string | null;
   onCommentClick?: (commentId: string) => void;
@@ -71,6 +72,7 @@ export function CommentsSidebar({
   updateReply,
   addReplyToComment,
   onToggleCommentsSidebar,
+  showCloseIcon = true,
   focusedCommentId,
   shouldShakeCommentId,
   onCommentClick,
@@ -131,7 +133,7 @@ export function CommentsSidebar({
                 </SelectContent>
               </Select>
             )}
-            {onToggleCommentsSidebar && (
+            {showCloseIcon && onToggleCommentsSidebar && (
               <Button
                 onClick={onToggleCommentsSidebar}
                 variant="ghost"

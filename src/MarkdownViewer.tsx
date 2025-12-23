@@ -18,6 +18,15 @@ import type { FileTreeNode, Comment, CommentReply } from './types';
 // Export types
 export type { FileTreeNode, Comment, CommentReply };
 
+export interface ComponentVisibilityConfig {
+  /** Whether the component is open/visible */
+  open: boolean;
+  /** Callback when the open state changes */
+  onOpenChange: (open: boolean) => void;
+  /** Whether to show the close icon */
+  showCloseIcon?: boolean;
+}
+
 export interface MarkdownViewerProps {
   /** File tree structure */
   folderTree: FileTreeNode[];
@@ -43,6 +52,12 @@ export interface MarkdownViewerProps {
   onFileSelect?: (filePath: string) => void;
   /** Optional: Callback to export comments */
   onExportComments?: (comments: Comment[]) => void;
+  /** Optional: File tree visibility configuration */
+  fileTreeConfig?: ComponentVisibilityConfig;
+  /** Optional: Table of contents visibility configuration */
+  tableOfContentsConfig?: ComponentVisibilityConfig;
+  /** Optional: Comments sidebar visibility configuration */
+  commentsSidebarConfig?: ComponentVisibilityConfig;
 }
 
 export function MarkdownViewer({
@@ -58,19 +73,23 @@ export function MarkdownViewer({
   selectedFilePath = null,
   onFileSelect,
   onExportComments,
+  fileTreeConfig,
+  tableOfContentsConfig,
+  commentsSidebarConfig,
 }: MarkdownViewerProps) {
   const [showCommentDialog, setShowCommentDialog] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [focusedCommentId, setFocusedCommentId] = useState<string | null>(null);
   const [shouldShakeCommentId, setShouldShakeCommentId] = useState<string | null>(null);
-  const [commentsSidebarCollapsed, setCommentsSidebarCollapsed] =
-    useState(false);
-  const [showFileTree, setShowFileTree] = useState(true);
-  const [showTableOfContents, setShowTableOfContents] = useState(true);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(
     selectedFilePath
   );
+
+  // Default configs if not provided
+  const fileTreeOpen = fileTreeConfig?.open ?? true;
+  const tableOfContentsOpen = tableOfContentsConfig?.open ?? true;
+  const commentsSidebarOpen = commentsSidebarConfig?.open ?? true;
 
   // Update current file path when prop changes
   useEffect(() => {
@@ -227,35 +246,47 @@ export function MarkdownViewer({
     }
   };
 
+  const handleFileTreeOpenChange = (open: boolean) => {
+    fileTreeConfig?.onOpenChange(open);
+  };
+
+  const handleTableOfContentsOpenChange = (open: boolean) => {
+    tableOfContentsConfig?.onOpenChange(open);
+  };
+
+  const handleCommentsSidebarOpenChange = (open: boolean) => {
+    commentsSidebarConfig?.onOpenChange(open);
+  };
+
   return (
     <>
       <div
         className={getMarkdownViewerGridClassName(
-          folderTree.length > 0 && showFileTree,
+          folderTree.length > 0 && fileTreeOpen,
           !!markdownContent,
-          showTableOfContents,
-          commentsSidebarCollapsed
+          tableOfContentsOpen,
+          !commentsSidebarOpen
         )}
       >
-        {folderTree.length > 0 && showFileTree && (
+        {folderTree.length > 0 && fileTreeOpen && (
           <div className="h-full overflow-hidden">
             <FileTree
               fileTree={folderTree}
               currentFilePath={currentFilePath}
               onFileSelect={handleFileSelect}
-              onToggleFileTree={() => setShowFileTree(!showFileTree)}
+              onToggleFileTree={fileTreeConfig ? () => handleFileTreeOpenChange(false) : undefined}
+              showCloseIcon={fileTreeConfig?.showCloseIcon ?? true}
             />
           </div>
         )}
 
-        {markdownContent && showTableOfContents && (
+        {markdownContent && tableOfContentsOpen && (
           <div className="h-full overflow-hidden">
             <TableOfContents
               htmlContent={htmlContent}
               previewRef={textSelectionRef}
-              onToggleTableOfContents={() =>
-                setShowTableOfContents(!showTableOfContents)
-              }
+              onToggleTableOfContents={tableOfContentsConfig ? () => handleTableOfContentsOpenChange(false) : undefined}
+              showCloseIcon={tableOfContentsConfig?.showCloseIcon ?? true}
             />
           </div>
         )}
@@ -288,7 +319,7 @@ export function MarkdownViewer({
           />
         </Card>
 
-        {!commentsSidebarCollapsed && (
+        {commentsSidebarOpen && (
           <div className="h-full overflow-hidden">
             <CommentsSidebar
             comments={normalizedComments}
@@ -332,9 +363,8 @@ export function MarkdownViewer({
             updateComment={handleUpdateComment}
             updateReply={handleUpdateReply}
             addReplyToComment={handleAddReplyToComment}
-            onToggleCommentsSidebar={() =>
-              setCommentsSidebarCollapsed(!commentsSidebarCollapsed)
-            }
+            onToggleCommentsSidebar={commentsSidebarConfig ? () => handleCommentsSidebarOpenChange(false) : undefined}
+            showCloseIcon={commentsSidebarConfig?.showCloseIcon ?? true}
             focusedCommentId={focusedCommentId}
             shouldShakeCommentId={shouldShakeCommentId}
             onCommentClick={(commentId) => {
@@ -347,9 +377,9 @@ export function MarkdownViewer({
           </div>
         )}
       </div>
-      {folderTree.length > 0 && !showFileTree && (
+      {folderTree.length > 0 && !fileTreeOpen && fileTreeConfig && (
         <FixedToggleButton
-          onClick={() => setShowFileTree(true)}
+          onClick={() => handleFileTreeOpenChange(true)}
           title="Show Files"
           icon={FolderOpen}
           position="left"
@@ -357,21 +387,21 @@ export function MarkdownViewer({
           className="left-0"
         />
       )}
-      {!showTableOfContents && (
+      {!tableOfContentsOpen && tableOfContentsConfig && (
         <FixedToggleButton
-          onClick={() => setShowTableOfContents(true)}
+          onClick={() => handleTableOfContentsOpenChange(true)}
           title="Show Table of Contents"
           icon={PanelLeftClose}
           position="left"
           index={1}
           className={
-            folderTree.length > 0 && showFileTree ? 'left-[300px]' : 'left-0'
+            folderTree.length > 0 && fileTreeOpen ? 'left-[300px]' : 'left-0'
           }
         />
       )}
-      {commentsSidebarCollapsed && (
+      {!commentsSidebarOpen && commentsSidebarConfig && (
         <button
-          onClick={() => setCommentsSidebarCollapsed(false)}
+          onClick={() => handleCommentsSidebarOpenChange(true)}
           className="fixed right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-l-lg shadow-lg border border-gray-200 border-r-0 px-2 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
           title="Show Comments"
         >

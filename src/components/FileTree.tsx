@@ -7,10 +7,11 @@ interface FileTreeProps {
   fileTree: FileTreeNode[];
   currentFilePath: string | null;
   onFileSelect: (filePath: string) => void;
-  onToggleFileTree: () => void;
+  onToggleFileTree?: () => void;
+  showCloseIcon?: boolean;
 }
 
-export function FileTree({ fileTree, currentFilePath, onFileSelect, onToggleFileTree }: FileTreeProps) {
+export function FileTree({ fileTree, currentFilePath, onFileSelect, onToggleFileTree, showCloseIcon = true }: FileTreeProps) {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
 
   const toggleExpand = (path: string) => {
@@ -94,14 +95,16 @@ export function FileTree({ fileTree, currentFilePath, onFileSelect, onToggleFile
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700">Files</h3>
-        <Button
-          onClick={onToggleFileTree}
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </Button>
+        {showCloseIcon && onToggleFileTree && (
+          <Button
+            onClick={onToggleFileTree}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         {fileTree.map((node) => renderNode(node))}
