@@ -1,10 +1,26 @@
 {
-  "name": "@yt/md-viewer",
+  "name": "@yasintz/md-viewer",
   "version": "1.0.0",
   "description": "A standalone React component for viewing markdown files with commenting capabilities",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "keywords": [
+    "react",
+    "markdown",
+    "viewer",
+    "comments",
+    "shadcn",
+    "tailwind"
+  ],
+  "homepage": "https://github.com/yasintz/md-viewer#readme",
+  "bugs": {
+    "url": "https://github.com/yasintz/md-viewer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yasintz/md-viewer.git"
+  },
+  "license": "ISC",
+  "author": "Yasin",
+  "type": "commonjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -12,6 +28,11 @@
       "require": "./dist/index.js"
     },
     "./styles": "./dist/index.css"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "directories": {
+    "example": "example"
   },
   "files": [
     "dist",
@@ -25,22 +46,12 @@
     "example:build": "cd example && pnpm run build",
     "example:preview": "cd example && pnpm run preview"
   },
-  "keywords": [
-    "react",
-    "markdown",
-    "viewer",
-    "comments",
-    "shadcn",
-    "tailwind"
-  ],
-  "author": "Yasin",
-  "license": "ISC",
-  "peerDependencies": {
-    "@radix-ui/react-dialog": "^1.0.0",
-    "@radix-ui/react-select": "^2.0.0",
-    "@radix-ui/react-slot": "^1.0.0",
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "marked": "^17.0.1",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@bosh-code/tsdown-plugin-tailwindcss": "^1.0.1",
@@ -51,11 +62,12 @@
     "tsdown": "^0.18.2",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.562.0",
-    "marked": "^17.0.1",
-    "tailwind-merge": "^3.4.0"
-  }
+  "peerDependencies": {
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-slot": "^1.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "module": "./dist/index.mjs"
 }
