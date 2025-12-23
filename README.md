@@ -141,13 +141,13 @@ interface CommentReply {
 This package uses Tailwind CSS. Make sure to include the styles in your application:
 
 ```tsx
-import 'md-viewer/styles';
+import '@yt/md-viewer/styles';
 ```
 
 Or import the CSS file directly:
 
 ```tsx
-import 'md-viewer/src/styles.css';
+import '@yt/md-viewer/src/styles.css';
 ```
 
 ## License
