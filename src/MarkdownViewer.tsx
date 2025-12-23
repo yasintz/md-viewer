@@ -63,10 +63,13 @@ export function MarkdownViewer({
   const [commentText, setCommentText] = useState('');
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [focusedCommentId, setFocusedCommentId] = useState<string | null>(null);
-  const [commentsSidebarCollapsed, setCommentsSidebarCollapsed] = useState(false);
+  const [commentsSidebarCollapsed, setCommentsSidebarCollapsed] =
+    useState(false);
   const [showFileTree, setShowFileTree] = useState(true);
   const [showTableOfContents, setShowTableOfContents] = useState(true);
-  const [currentFilePath, setCurrentFilePath] = useState<string | null>(selectedFilePath);
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(
+    selectedFilePath
+  );
 
   // Update current file path when prop changes
   useEffect(() => {
@@ -179,7 +182,9 @@ export function MarkdownViewer({
       if (comment) {
         // Note: This won't actually update the replies array in the parent
         // The parent should provide onReplyDelete callback for proper handling
-        console.warn('onReplyDelete callback not provided. Reply deletion may not work correctly.');
+        console.warn(
+          'onReplyDelete callback not provided. Reply deletion may not work correctly.'
+        );
       }
     }
   };
@@ -188,13 +193,19 @@ export function MarkdownViewer({
     onCommentUpdate(id, text);
   };
 
-  const handleUpdateReply = (commentId: string, replyId: string, text: string) => {
+  const handleUpdateReply = (
+    commentId: string,
+    replyId: string,
+    text: string
+  ) => {
     if (onReplyUpdate) {
       onReplyUpdate(commentId, replyId, text);
     } else {
       // Fallback: This won't actually update the reply
       // The parent should provide onReplyUpdate callback for proper handling
-      console.warn('onReplyUpdate callback not provided. Reply update may not work correctly.');
+      console.warn(
+        'onReplyUpdate callback not provided. Reply update may not work correctly.'
+      );
     }
   };
 
@@ -216,7 +227,7 @@ export function MarkdownViewer({
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <>
       <div
         className={getMarkdownViewerGridClassName(
           folderTree.length > 0 && showFileTree,
@@ -321,7 +332,6 @@ export function MarkdownViewer({
           />
         )}
       </div>
-
       {folderTree.length > 0 && !showFileTree && (
         <FixedToggleButton
           onClick={() => setShowFileTree(true)}
@@ -332,7 +342,6 @@ export function MarkdownViewer({
           className="left-0"
         />
       )}
-
       {!showTableOfContents && (
         <FixedToggleButton
           onClick={() => setShowTableOfContents(true)}
@@ -345,7 +354,6 @@ export function MarkdownViewer({
           }
         />
       )}
-
       {commentsSidebarCollapsed && (
         <button
           onClick={() => setCommentsSidebarCollapsed(false)}
@@ -355,7 +363,6 @@ export function MarkdownViewer({
           <MessageSquare className="size-4 text-gray-600" />
         </button>
       )}
-
       <CommentDialog
         open={showCommentDialog}
         onOpenChange={setShowCommentDialog}
@@ -370,7 +377,6 @@ export function MarkdownViewer({
           clearSelection();
         }}
       />
-
       {showExportDialog && (
         <ExportDialog
           open={showExportDialog}
@@ -378,7 +384,6 @@ export function MarkdownViewer({
           comments={normalizedComments}
         />
       )}
-    </div>
+    </>
   );
 }
-
