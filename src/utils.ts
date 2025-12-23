@@ -7,7 +7,7 @@ export function getMarkdownViewerGridClassName(
   commentsSidebarCollapsed: boolean
 ): string {
   return cn(
-    'flex-1 grid gap-6 p-6 overflow-hidden',
+    'h-full grid gap-6 p-6 overflow-hidden',
     // With FileTree visible
     hasFileTree &&
       hasFileContent &&

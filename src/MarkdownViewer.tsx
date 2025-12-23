@@ -238,7 +238,7 @@ export function MarkdownViewer({
         )}
       >
         {folderTree.length > 0 && showFileTree && (
-          <div className="overflow-hidden">
+          <div className="h-full overflow-hidden">
             <FileTree
               fileTree={folderTree}
               currentFilePath={currentFilePath}
@@ -249,7 +249,7 @@ export function MarkdownViewer({
         )}
 
         {markdownContent && showTableOfContents && (
-          <div className="overflow-hidden">
+          <div className="h-full overflow-hidden">
             <TableOfContents
               htmlContent={htmlContent}
               previewRef={textSelectionRef}
@@ -260,7 +260,7 @@ export function MarkdownViewer({
           </div>
         )}
 
-        <Card className="bg-white rounded-lg p-6 shadow-sm flex flex-col overflow-hidden">
+        <Card className="bg-white rounded-lg p-6 shadow-sm flex flex-col overflow-hidden h-full">
           <PreviewHeader
             commentsCount={normalizedComments.length}
             onExportComments={handleExportComments}
@@ -289,7 +289,8 @@ export function MarkdownViewer({
         </Card>
 
         {!commentsSidebarCollapsed && (
-          <CommentsSidebar
+          <div className="h-full overflow-hidden">
+            <CommentsSidebar
             comments={normalizedComments}
             commentHistory={[]}
             selectedHistoryId={null}
@@ -343,6 +344,7 @@ export function MarkdownViewer({
               setTimeout(() => setFocusedCommentId(null), 1000);
             }}
           />
+          </div>
         )}
       </div>
       {folderTree.length > 0 && !showFileTree && (

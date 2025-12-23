@@ -95,7 +95,7 @@ export function CommentsSidebar({
     }
   };
   return (
-    <Card className="bg-white rounded-lg p-6 shadow-sm flex flex-col overflow-hidden">
+    <Card className="bg-white rounded-lg p-6 shadow-sm flex flex-col overflow-hidden h-full">
       <CardHeader className="p-0 pb-4">
         <div className="flex justify-between items-center border-b-2 border-blue-600 pb-2">
           <CardTitle className="text-lg text-gray-800 m-0">
@@ -145,7 +145,7 @@ export function CommentsSidebar({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden flex flex-col p-0 pt-4">
+      <CardContent className="flex-1 overflow-hidden flex flex-col p-0 pt-4 min-h-0">
         {isViewingHistory && (
           <div className="bg-yellow-50 border border-yellow-400 text-yellow-800 px-3 py-2 rounded mb-4 text-sm text-center">
             📜 Viewing history - Comments are read-only
