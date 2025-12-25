@@ -2,6 +2,8 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { spawn } from 'child_process'
+import chokidar from 'chokidar'
 
 // Custom plugin to resolve library's internal @/ imports
 function resolveLibraryAliases() {
@@ -36,12 +38,102 @@ function resolveLibraryAliases() {
   }
 }
 
+// Plugin to watch ../src and run tsdown on changes
+function watchLibrarySource() {
+  const librarySrcPath = path.resolve(__dirname, '../src')
+  const libraryRootPath = path.resolve(__dirname, '..')
+  let watcher: ReturnType<typeof chokidar.watch> | null = null
+  let buildTimeout: NodeJS.Timeout | null = null
+
+  const runTsdown = () => {
+    // Clear any pending build
+    if (buildTimeout) {
+      clearTimeout(buildTimeout)
+    }
+
+    // Debounce builds to avoid multiple rapid builds
+    buildTimeout = setTimeout(() => {
+      console.log('[vite-plugin-tsdown] Building library...')
+      const process = spawn('pnpm', ['run', 'build'], {
+        cwd: libraryRootPath,
+        stdio: 'inherit',
+        shell: true,
+      })
+
+      process.on('close', (code) => {
+        if (code === 0) {
+          console.log('[vite-plugin-tsdown] Library build completed')
+        } else {
+          console.error(`[vite-plugin-tsdown] Library build failed with code ${code}`)
+        }
+      })
+    }, 300)
+  }
+
+  const startWatching = () => {
+    // Initial build
+    runTsdown()
+
+    // Watch ../src for changes
+    watcher = chokidar.watch(librarySrcPath, {
+      ignored: /(^|[/\\])\../, // ignore dotfiles
+      persistent: true,
+      ignoreInitial: true,
+    })
+
+    watcher.on('change', (filePath) => {
+      console.log(`[vite-plugin-tsdown] File changed: ${filePath}`)
+      runTsdown()
+    })
+
+    watcher.on('add', (filePath) => {
+      console.log(`[vite-plugin-tsdown] File added: ${filePath}`)
+      runTsdown()
+    })
+
+    watcher.on('unlink', (filePath) => {
+      console.log(`[vite-plugin-tsdown] File deleted: ${filePath}`)
+      runTsdown()
+    })
+  }
+
+  const stopWatching = () => {
+    if (watcher) {
+      watcher.close()
+      watcher = null
+    }
+    if (buildTimeout) {
+      clearTimeout(buildTimeout)
+      buildTimeout = null
+    }
+  }
+
+  return {
+    name: 'watch-library-source',
+    configureServer() {
+      // Start watching when dev server starts
+      startWatching()
+    },
+    buildStart() {
+      // Also watch during build
+      startWatching()
+    },
+    buildEnd() {
+      stopWatching()
+    },
+    closeBundle() {
+      stopWatching()
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     resolveLibraryAliases(),
+    watchLibrarySource(),
   ],
   resolve: {
     alias: [

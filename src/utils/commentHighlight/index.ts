@@ -1,0 +1,2 @@
+export { highlightCommentsInHtml } from './highlightCommentsInHtml';
+

@@ -1,6 +1,6 @@
 {
   "name": "@yasintz/md-viewer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A standalone React component for viewing markdown files with commenting capabilities",
   "keywords": [
     "react",
@@ -41,9 +41,11 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "example:dev": "cd example && pnpm run dev",
-    "example:build": "cd example && pnpm run build",
-    "example:preview": "cd example && pnpm run preview"
+    "example:dev": "tsdown && cd example && pnpm run dev",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -54,12 +56,19 @@
   },
   "devDependencies": {
     "@bosh-code/tsdown-plugin-tailwindcss": "^1.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/ui": "^4.0.16",
+    "jsdom": "^27.3.0",
     "shadcn": "^3.6.2",
     "tailwindcss": "^4.1.18",
     "tsdown": "^0.18.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "@radix-ui/react-dialog": "^1.0.0",
