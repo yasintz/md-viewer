@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useLayoutEffect } from 'react';
+import { normalizeText } from '@/utils/commentHighlight/normalizeText';
 
 interface SelectionPosition {
   line: number;
@@ -18,11 +19,6 @@ interface UseTextSelectionResult {
   handleTextSelection: () => void;
   handleCommentIconClick: (e: React.MouseEvent) => void;
   clearSelection: () => void;
-}
-
-// Utility function to normalize whitespace
-function normalizeText(str: string): string {
-  return str.replace(/\s+/g, ' ').trim();
 }
 
 // Find all occurrences of a search string in content
@@ -326,8 +322,8 @@ export function useTextSelection(
               // Verify the selection actually worked
               const restoredText = selection.toString().trim();
               
-              // If the restored text doesn't match, fall back to text search
-              if (restoredText !== selectedText) {
+              // If the restored text doesn't match (using normalized comparison), fall back to text search
+              if (normalizeText(restoredText) !== normalizeText(selectedText)) {
                 throw new Error('Restored text does not match');
               }
             } catch (e) {
@@ -336,26 +332,192 @@ export function useTextSelection(
           }
           
           // If range wasn't valid or restore failed, use text-based search
-          if (!rangeValid || selection.toString().trim() !== selectedText) {
+          const currentSelectionText = selection.toString().trim();
+          if (!rangeValid || normalizeText(currentSelectionText) !== normalizeText(selectedText)) {
             selection.removeAllRanges();
             
-            // Find the text in the DOM and select it
-            const walker = document.createTreeWalker(
-              previewRef.current,
-              NodeFilter.SHOW_TEXT,
-              null
-            );
+            // Normalize the search text for comparison
+            const normalizedSearchText = normalizeText(selectedText);
+            if (!normalizedSearchText) return;
             
-            let node;
-            while (node = walker.nextNode()) {
-              const nodeText = node.textContent || '';
-              const index = nodeText.indexOf(selectedText);
+            // Find the text in the DOM and select it
+            // Get all text nodes, excluding those inside comment-highlight spans
+            const getAllTextNodes = (): Text[] => {
+              const textNodes: Text[] = [];
+              const walker = document.createTreeWalker(
+                previewRef.current!,
+                NodeFilter.SHOW_TEXT,
+                {
+                  acceptNode: (node) => {
+                    // Skip text nodes that are inside comment-highlight spans
+                    let parent = node.parentNode;
+                    while (parent && parent !== previewRef.current) {
+                      if (parent instanceof HTMLElement && parent.classList.contains('comment-highlight')) {
+                        return NodeFilter.FILTER_REJECT;
+                      }
+                      parent = parent.parentNode;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                  }
+                }
+              );
+
+              let node: Node | null;
+              while ((node = walker.nextNode())) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                  textNodes.push(node as Text);
+                }
+              }
+              return textNodes;
+            };
+
+            const textNodes = getAllTextNodes();
+            
+            // Try to find the text, potentially spanning multiple nodes
+            // First, try to find it within a single text node
+            let foundNode: Text | null = null;
+            let startNodeIndex = -1;
+            let endNodeIndex = -1;
+            let startOffset = -1;
+            let endOffset = -1;
+            
+            // Try single node first
+            for (let i = 0; i < textNodes.length; i++) {
+              const textNode = textNodes[i];
+              const nodeText = normalizeText(textNode.textContent || '');
+              const index = nodeText.indexOf(normalizedSearchText);
               if (index !== -1) {
-                const range = document.createRange();
-                range.setStart(node, index);
-                range.setEnd(node, index + selectedText.length);
-                selection.addRange(range);
+                foundNode = textNode;
+                startNodeIndex = i;
+                endNodeIndex = i;
+                startOffset = index;
+                endOffset = index + normalizedSearchText.length;
                 break;
+              }
+            }
+
+            // If not found in a single node, try concatenating adjacent nodes
+            if (!foundNode) {
+              // Try concatenating adjacent nodes to find text that spans multiple nodes
+              for (let i = 0; i < textNodes.length; i++) {
+                let accumulatedText = '';
+                const nodesInRange: Text[] = [];
+                
+                // Try up to 10 adjacent nodes
+                for (let j = i; j < Math.min(i + 10, textNodes.length); j++) {
+                  const node = textNodes[j];
+                  const nodeText = node.textContent || '';
+                  nodesInRange.push(node);
+                  accumulatedText += (accumulatedText ? ' ' : '') + nodeText;
+                  
+                  const normalizedAccumulated = normalizeText(accumulatedText);
+                  const searchIndex = normalizedAccumulated.indexOf(normalizedSearchText);
+                  
+                  if (searchIndex !== -1) {
+                    // Found it! Now figure out which nodes contain the match
+                    // Calculate positions in normalized space
+                    let currentNormPos = 0;
+                    
+                    for (let k = 0; k < nodesInRange.length; k++) {
+                      const node = nodesInRange[k];
+                      const nodeNorm = normalizeText(node.textContent || '');
+                      const nodeStartNorm = currentNormPos;
+                      const nodeEndNorm = currentNormPos + nodeNorm.length;
+                      
+                      // Check if search starts in this node
+                      if (searchIndex >= nodeStartNorm && searchIndex < nodeEndNorm) {
+                        startNodeIndex = i + k;
+                        startOffset = searchIndex - nodeStartNorm;
+                        
+                        // Calculate end position
+                        const searchEndNorm = searchIndex + normalizedSearchText.length;
+                        if (searchEndNorm <= nodeEndNorm) {
+                          // Entire match is in this node
+                          endNodeIndex = i + k;
+                          endOffset = searchEndNorm - nodeStartNorm;
+                        } else {
+                          // Match spans to next nodes
+                          endNodeIndex = i + k;
+                          endOffset = nodeNorm.length;
+                          let remainingLength = normalizedSearchText.length - (nodeNorm.length - startOffset);
+                          
+                          for (let m = k + 1; m < nodesInRange.length && remainingLength > 0; m++) {
+                            const nextNode = nodesInRange[m];
+                            const nextNodeNorm = normalizeText(nextNode.textContent || '');
+                            endNodeIndex = i + m;
+                            
+                            if (remainingLength <= nextNodeNorm.length) {
+                              endOffset = remainingLength;
+                              remainingLength = 0;
+                            } else {
+                              remainingLength -= nextNodeNorm.length;
+                              endOffset = nextNodeNorm.length;
+                            }
+                          }
+                        }
+                        
+                        foundNode = node;
+                        break;
+                      }
+                      
+                      currentNormPos = nodeEndNorm + 1; // +1 for space between nodes
+                    }
+                    
+                    if (foundNode) break;
+                  }
+                }
+                
+                if (foundNode) break;
+              }
+            }
+
+            if (foundNode && startNodeIndex !== -1) {
+              // Helper to convert normalized offset to actual character position
+              const normalizedToActualOffset = (node: Text, normalizedOffset: number): number => {
+                const nodeText = node.textContent || '';
+                const normalizedText = normalizeText(nodeText);
+                let normalizedPos = 0;
+                
+                for (let i = 0; i < nodeText.length; i++) {
+                  const char = nodeText[i];
+                  if (/\s/.test(char)) {
+                    if (normalizedPos === 0 || normalizedText[normalizedPos - 1] !== ' ') {
+                      normalizedPos++;
+                    }
+                  } else {
+                    normalizedPos++;
+                  }
+                  
+                  if (normalizedPos > normalizedOffset) {
+                    return i;
+                  }
+                }
+                return nodeText.length;
+              };
+
+              // Handle highlighting - either single node or multiple nodes
+              if (startNodeIndex === endNodeIndex) {
+                // Single node case
+                const textNode = textNodes[startNodeIndex];
+                const actualStartPos = normalizedToActualOffset(textNode, startOffset);
+                const actualEndPos = normalizedToActualOffset(textNode, endOffset);
+                
+                const range = document.createRange();
+                range.setStart(textNode, actualStartPos);
+                range.setEnd(textNode, actualEndPos);
+                selection.addRange(range);
+              } else {
+                // Multiple nodes case
+                const startNode = textNodes[startNodeIndex];
+                const endNode = textNodes[endNodeIndex];
+                
+                const actualStartPos = normalizedToActualOffset(startNode, startOffset);
+                const actualEndPos = normalizedToActualOffset(endNode, endOffset);
+                
+                const range = document.createRange();
+                range.setStart(startNode, actualStartPos);
+                range.setEnd(endNode, actualEndPos);
+                selection.addRange(range);
               }
             }
           }
