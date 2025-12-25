@@ -45,7 +45,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "publish": "sh publish.sh"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
