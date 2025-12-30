@@ -1,6 +1,6 @@
 {
   "name": "@yasintz/md-viewer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A standalone React component for viewing markdown files with commenting capabilities",
   "keywords": [
     "react",
