@@ -14,9 +14,10 @@ import { FixedToggleButton } from './components/FixedToggleButton';
 import { ExportDialog } from './components/ExportDialog';
 import { getMarkdownViewerGridClassName } from './utils';
 import type { FileTreeNode, Comment, CommentReply } from './types';
+import type { QuickComment } from './components/QuickComments';
 
 // Export types
-export type { FileTreeNode, Comment, CommentReply };
+export type { FileTreeNode, Comment, CommentReply, QuickComment };
 
 export interface ComponentVisibilityConfig {
   /** Whether the component is open/visible */
@@ -58,6 +59,8 @@ export interface MarkdownViewerProps {
   tableOfContentsConfig?: ComponentVisibilityConfig;
   /** Optional: Comments sidebar visibility configuration */
   commentsSidebarConfig?: ComponentVisibilityConfig;
+  /** Optional: Quick comments array for one-click commenting */
+  quickComments?: QuickComment[];
 }
 
 export function MarkdownViewer({
@@ -76,6 +79,7 @@ export function MarkdownViewer({
   fileTreeConfig,
   tableOfContentsConfig,
   commentsSidebarConfig,
+  quickComments = [],
 }: MarkdownViewerProps) {
   const [showCommentDialog, setShowCommentDialog] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -141,6 +145,41 @@ export function MarkdownViewer({
   const handleCommentIconClickWithDialog = (e: React.MouseEvent) => {
     handleCommentIconClick(e);
     setShowCommentDialog(true);
+  };
+
+  const handleQuickCommentClick = (quickComment: QuickComment) => {
+    if (selectedText && selectionPosition) {
+      const existingComment = normalizedComments.find(
+        (c) =>
+          c.selectedText === selectedText &&
+          c.line === selectionPosition.line &&
+          c.column === selectionPosition.column
+      );
+
+      if (existingComment) {
+        // Add as reply to existing comment
+        const reply: CommentReply = {
+          id: Date.now().toString(),
+          text: quickComment.commentText,
+          timestamp: Date.now(),
+        };
+        onCommentReply(existingComment.id, reply);
+      } else {
+        // Add as new comment
+        const newComment: Comment = {
+          id: Date.now().toString(),
+          text: quickComment.commentText,
+          selectedText: selectedText,
+          line: selectionPosition.line,
+          column: selectionPosition.column,
+          timestamp: Date.now(),
+          replies: [],
+        };
+        onCommentAdd(newComment);
+      }
+
+      clearSelection();
+    }
   };
 
   const handleAddComment = () => {
@@ -307,6 +346,8 @@ export function MarkdownViewer({
             fileTreeLength={folderTree.length}
             comments={normalizedComments}
             focusedCommentId={focusedCommentId}
+            quickComments={quickComments}
+            onQuickCommentClick={handleQuickCommentClick}
             onCommentHighlightClick={(commentId) => {
               setFocusedCommentId(commentId);
               setShouldShakeCommentId(commentId);

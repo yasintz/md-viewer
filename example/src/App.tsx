@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MarkdownViewer } from '@md-viewer';
-import type { FileTreeNode, Comment, CommentReply, ComponentVisibilityConfig } from '@md-viewer';
+import type { FileTreeNode, Comment, CommentReply, ComponentVisibilityConfig, QuickComment } from '@md-viewer';
 
 const sampleMarkdown = `# Welcome to Markdown Viewer
 
@@ -149,6 +149,30 @@ function App() {
     showCloseIcon: true,
   };
 
+  // Quick comments configuration
+  const quickComments: QuickComment[] = [
+    {
+      id: 'delete',
+      commentText: 'Delete this part, I don\'t want it in the document',
+      icon: 'trash-2',
+    },
+    {
+      id: 'fix',
+      commentText: 'This needs to be fixed',
+      icon: 'wrench',
+    },
+    {
+      id: 'improve',
+      commentText: 'This could be improved',
+      icon: 'sparkles',
+    },
+    {
+      id: 'question',
+      commentText: 'I have a question about this',
+      icon: 'help-circle',
+    },
+  ];
+
   return (
     <div className="h-screen w-screen">
       <MarkdownViewer
@@ -167,6 +191,7 @@ function App() {
         fileTreeConfig={fileTreeConfig}
         tableOfContentsConfig={tableOfContentsConfig}
         commentsSidebarConfig={commentsSidebarConfig}
+        quickComments={quickComments}
       />
     </div>
   );

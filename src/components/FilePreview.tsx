@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { CommentIconButton } from './CommentIconButton';
+import { QuickComments, type QuickComment } from './QuickComments';
 import type { Comment } from '@/types';
 import { highlightCommentsInHtml } from '@/utils/commentHighlight';
 
@@ -21,6 +22,8 @@ interface FilePreviewProps {
   comments: Comment[];
   onCommentHighlightClick?: (commentId: string) => void;
   focusedCommentId?: string | null;
+  quickComments?: QuickComment[];
+  onQuickCommentClick?: (quickComment: QuickComment) => void;
 }
 
 export function FilePreview({
@@ -35,6 +38,8 @@ export function FilePreview({
   comments,
   onCommentHighlightClick,
   focusedCommentId,
+  quickComments = [],
+  onQuickCommentClick,
 }: FilePreviewProps) {
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
@@ -102,10 +107,21 @@ export function FilePreview({
             onClick={handleHighlightClick}
           />
           {commentIconPosition && (
-            <CommentIconButton
-              position={commentIconPosition}
-              onClick={handleCommentIconClickWithDialog}
-            />
+            <>
+              {quickComments.length > 0 ? (
+                <QuickComments
+                  position={commentIconPosition}
+                  quickComments={quickComments}
+                  onQuickCommentClick={onQuickCommentClick || (() => {})}
+                  onCommentIconClick={handleCommentIconClickWithDialog}
+                />
+              ) : (
+                <CommentIconButton
+                  position={commentIconPosition}
+                  onClick={handleCommentIconClickWithDialog}
+                />
+              )}
+            </>
           )}
         </div>
       ) : (
